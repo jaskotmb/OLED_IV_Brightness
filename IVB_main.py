@@ -21,22 +21,24 @@ OLEDTools.makeTodayDir()
 
 # Initializing sweep parameters
 timeStep = .05
-numPoints = 11
-Vhi = 10
-Vneg = -Vhi
-currProt = 0.125
-step = Vhi/(numPoints - 1)
-mux = [1]
+numPointsUp = 101
+numPointsDown = 1001
+Vhi = 5
+Vneg = -15
+currProt = 4E-3
+stepup = Vhi/(numPointsUp - 1)
+stepdown = -Vneg/(numPointsDown - 1)
+mux = [6]
 each = ['V1']
 timeBegin = datetime.datetime.now()
-elapse = 4*len(mux)*len(each)*(timeStep*numPoints) + 3*len(mux)*len(each)*14.5
+elapse = 4#*len(mux)*len(each)*(timeStep*numPoints) + 3*len(mux)*len(each)*14.5
 timeEnd = timeBegin + datetime.timedelta(0,elapse)
 print("Measurement Begin: {:%A, %d %B %Y %H:%M:%S}".format(timeBegin))
 print("Measurement End:   {:%A, %d %B %Y %H:%M:%S}".format(timeEnd))
 
 for i in mux:
     for k in each:
-        sampleName = '180719_Something'+str(i)+'-'+str(k)
+        sampleName = '180718Dv1'+str(i)+'-'+str(k)
         startTimeStr = OLEDTools.stringTime()
         print("Time: {}, Sample: {} ".format(startTimeStr,sampleName),end='')
         outName = sampleName+'_'+startTimeStr+'.csv'
@@ -49,13 +51,13 @@ for i in mux:
         time.sleep(2)
 
         # Sweep zero, hi, zero, low, zero
-        x = OLEDTools.IVBSweep(0, Vhi, step, timeStep, currProt,1)
+        x = OLEDTools.IVBSweep(0, Vhi, stepup, timeStep, currProt,1)
         OLEDTools.writeIVB(outName,x)
         print('Saved: 1...',end='')
-        y = OLEDTools.IVBSweep(Vhi, Vneg, step, timeStep, currProt,0)
+        y = OLEDTools.IVBSweep(Vhi, Vneg, (stepup+stepdown), timeStep, currProt,0)
         OLEDTools.writeIVB(outName,x+y)
         print('2...3...',end='')
-        z = OLEDTools.IVBSweep(Vneg, 0, step, timeStep, currProt,0)
+        z = OLEDTools.IVBSweep(Vneg, 0, stepdown, timeStep, currProt,0)
         totalIVB = x + y + z
         OLEDTools.writeIVB(outName,totalIVB)
         print('4...',end='')

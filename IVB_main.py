@@ -21,25 +21,20 @@ OLEDTools.makeTodayDir()
 
 # Initializing sweep parameters
 timeStep = .05
-numPointsUp = 101
-numPointsDown = 1001
 Vhi = 5
-Vneg = -20
-currProt = 10E-3
+Vneg = -11
+currProt = 25E-3
 decayTime = 600
-stepup = Vhi/(numPointsUp - 1)
-stepdown = -Vneg/(numPointsDown - 1)
-mux = [7,8]
-each = ['V1']
+stepup = 200
+stepdown = 800
+mux = [5,6,7,8]
+each = ['V2']
 timeBegin = datetime.datetime.now()
-elapse = decayTime*len(mux)*len(each) + 2*len(mux)*len(each)*(stepup*numPointsUp+stepdown*numPointsDown) + 4.5*len(mux)*len(each)
-timeEnd = timeBegin + datetime.timedelta(0,elapse)
 print("Measurement Begin: {:%A, %d %B %Y %H:%M:%S}".format(timeBegin))
-print("Measurement End:   {:%A, %d %B %Y %H:%M:%S}".format(timeEnd))
 
 for i in mux:
     for k in each:
-        sampleName = '180730Dv8'+str(i)+'-'+str(k)
+        sampleName = '180828Dv18'+str(i)+'-'+str(k)
         startTimeStr = OLEDTools.stringTime()
         print("Time: {}, Sample: {} ".format(startTimeStr,sampleName))
         outName = sampleName+'_'+startTimeStr+'.csv'
@@ -52,24 +47,23 @@ for i in mux:
         ser.write(str.encode('-' + str(i)))
         time.sleep(2)
 
-        print("Decay Test:")
-        ts = OLEDTools.currDecay(-.1E-3,decayTime)
-        if ts != "fail":
-            OLEDTools.writeIVBDecay(outDecayName,ts)
-
-            print("Time: {}, Sample: {} ".format(startTimeStr,sampleName))
+        # print("Decay Test:")
+        # ts = OLEDTools.currDecay(-.1E-3,decayTime)
+        # if ts != "fail":
+        #     OLEDTools.writeIVBDecay(outDecayName,ts)
+        if 1:
             print("IV Test: ",end='')
             # Sweep zero, hi, zero, low, zero
-            w = OLEDTools.IVBSweep(0, Vhi, stepup, timeStep, currProt,1)
+            w = OLEDTools.IVBSweep(0, Vhi, stepup, currProt,1)
             OLEDTools.writeIVB(outName,w)
             print('Saved: 1...',end='')
-            x = OLEDTools.IVBSweep(Vhi, 0, stepup, timeStep, currProt,0)
+            x = OLEDTools.IVBSweep(Vhi, 0, stepup, currProt,1)
             OLEDTools.writeIVB(outName,w+x)
             print('2...',end='')
-            y = OLEDTools.IVBSweep(0, Vneg, stepdown, timeStep, currProt,0)
+            y = OLEDTools.IVBSweep(0, Vneg, stepdown, currProt,1)
             OLEDTools.writeIVB(outName,w+x+y)
             print('3...',end='')
-            z = OLEDTools.IVBSweep(Vneg, 0, stepdown, timeStep, currProt,0)
+            z = OLEDTools.IVBSweep(Vneg, 0, stepdown, currProt,1)
             totalIVB = w + x + y + z
             OLEDTools.writeIVB(outName,totalIVB)
             print('4...')

@@ -20,40 +20,46 @@ ser = serial.Serial('COM3', 9600, timeout=0)
 os.chdir('C:\\Users\\Morty\\Documents\\OLED_IVB_Data')
 print("Current Directory: {}".format(os.getcwd()))
 OLEDTools.makeTodayDir()
+# decayTime = 600
 
 # Initializing sweep parameters
 timeStep = .05
 currProt = 50E-3
 #decayTime = 5
 mux = [1,3,4,5,6,7,8]
-Vto = [""]*8
-Vto = [-3.15,-2.0,-3.46,-3.50,-3.48,-3.43,-3.44,-3.50]
+#Vto = [""]*8
+Vto = [-3.86,-3.86,-3.86,-3.86,-3.86,-3.86,-3.86]
 print(Vto)
-for i in mux:
-    time.sleep(0.5)
-    ser.write(b'+0')
-    time.sleep(2)
-    ser.write(str.encode('-' + str(i)))
-    time.sleep(2)
-    Vto[i-1] = OLEDTools.findTurnOnVoltage(-3.0,-4.0,.01,25e-3,3e-8)
-    print(Vto)
-    time.sleep(2)
-    ser.write(str.encode('+' + str(i)))
-    time.sleep(2)
-print(Vto)
-each = ['V1','V2','V3','V4']
+# for i in mux:
+#     time.sleep(0.5)
+#     ser.write(b'+0')
+#     time.sleep(2)
+#     ser.write(str.encode('-' + str(i)))
+#     time.sleep(2)
+#     Vto[i-1] = OLEDTools.findTurnOnVoltage(-3,-4.5,.01,25e-3,3e-8)
+#     print(Vto)
+#     time.sleep(2)
+#     ser.write(str.encode('+' + str(i)))
+#     time.sleep(2)
+# print(Vto)
+each = ['V1']
 timeBegin = datetime.datetime.now()
 print("Measurement Begin: {:%A, %d %B %Y %H:%M:%S}".format(timeBegin))
 
 for i in mux:
     for k in each:
-        voltSweep = list(numpy.logspace(math.log10(-1*float(Vto[i-1])),math.log10(12),num=200))
-        voltSweep = [-x for x in voltSweep]
-        sampleName = '190227Dv6'+str(i)+'-'+str(k)
+        negVoltSweep = list(reversed(list((-1*numpy.logspace(-8,math.log10(10),num=400)))))
+        #lowVoltSweep = list(numpy.logspace(-8,math.log10(-1*float(Vto[i-1])),num=800))
+        #voltSweep = list(numpy.logspace(math.log10(-1*float(Vto[i-1])),math.log10(10),num=200))
+        voltSweep = list(numpy.logspace(-8,math.log10(10),num=400))
+        #voltSweepTotal = negVoltSweep + lowVoltSweep + voltSweep
+        voltSweepTotal = negVoltSweep + voltSweep
+        voltSweepTotal = [-x for x in voltSweepTotal]
+        sampleName = '210302cAFM50%'+str(i)+'-'+str(k)
         startTimeStr = OLEDTools.stringTime()
         print("Time: {}, Sample: {} ".format(startTimeStr,sampleName))
         outName = sampleName+'_'+startTimeStr+'.csv'
-        #outDecayName = sampleName+'_Decay_'+startTimeStr+'.csv'
+        outDecayName = sampleName+'_Decay_'+startTimeStr+'.csv'
 
         # Initializing mux switch, selecting device
         time.sleep(0.5)
@@ -63,17 +69,17 @@ for i in mux:
         time.sleep(2)
 
         # Reverse Biasing:
-        OLEDTools.biasVoltsTime(30,15)
+        #OLEDTools.biasVoltsTime(30,15)
 
         # print("Decay Test:")
-        # ts = OLEDTools.currDecay(-.1E-3,decayTime)
+        # ts = OLEDTools.currDecay(-.0001,decayTime)
         # if ts != "fail":
         #     OLEDTools.writeIVBDecay(outDecayName,ts)
         #OLEDTools.findTurnOnVoltage(15,20,.005,5e-3,3e-8)
         if 1:
             print("IV Test: ",end='')
             # Sweep zero, hi, zero, low, zero
-            w = OLEDTools.IVBSweep(0,currProt,voltSweep)
+            w = OLEDTools.IVBSweep(0,currProt,voltSweepTotal)
             print("foo")
             OLEDTools.writeIVB(outName,w)
             print("foo2")
